@@ -4,8 +4,13 @@
       <meta charset="utf-8">
       <title>Week 7 exercises</title>
       <script type="text/javascript" src="d3/d3.js"></script>
+      <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
   	  <style type="text/css">
 		
+  	  	text, h1,h2,p {
+  	  		font-family: Helvetica, Arial, sans-serif;
+  	  	}
+
 		.axis path,
 		.axis line {
 			fill: none;
@@ -23,7 +28,7 @@
 			font-size: 11px;
 		}
 
-		#graph_title {
+		#graph_title, #graph_title2 {
 			font-family: Helvetica, Arial, sans-serif;
 			font-size: 20px;
 			text-align: center;
@@ -38,6 +43,32 @@
 			margin: 0 auto
 		}
 
+		.bar {
+		  transition: fill 1.5s ease;
+		  fill: #5A9690;
+		}
+
+		.bar:hover {
+		  fill: #3ABBD8 ;
+		}
+
+		.x.axis path {
+		  display: none;
+		}
+
+		.d3-tip {
+		  line-height: 1;
+		  font-weight: bold;
+		  padding: 12px;
+		  background: rgba(0, 0, 0, 0.8);
+		  color: #fff;
+		  border-radius: 2px;
+		}
+
+		.tipperCol {
+			color: #506CD2;
+		}
+
 
 	</style>
   </head>
@@ -47,7 +78,7 @@
 		<div class="textContainer">
 			<h2> Header summarizing visualization 1</h2>
 			<p>Text describing visualization 1. Assume that the reader hasn't read this exercise.</p>
-			<h3 id="graph_title"></h3>
+			<p id="graph_title"></p>
 			<button id="id2003">Click to toggle between 2003 and 2015 data.</button>
 		</div>			
 		<div class="Viz1"></div>
@@ -57,6 +88,7 @@
 		<div class="textContainer">
 		    <h2> Header summarizing visualization 2</h2>
 		    <p>Text describing visualization 2. Assume that the reader hasn't read this exercise.</p>
+		    <p id="graph_title2">Total number of crimes for 2013 and 2015 by region.</p>
 	    </div>
 	    <div class="Viz2"></div>
     </div>
@@ -192,7 +224,7 @@ d3.csv("SFdata.csv", function(dataset) {
 	}
 
 	function createTextLabels(year,texter,color){
-		d3.select('#graph_title ').text('Data from the year: '+year).attr("color",color)
+		d3.select('#graph_title ').text('Data from the year: '+year).attr("fill",color)
 	
 		texter.transition()
 	   		  .duration(1000)
@@ -226,6 +258,79 @@ d3.csv("SFdata.csv", function(dataset) {
 
 });
 
+// -----------------------------Visulazation 2 --------------------------
+// 
+var margin = {top: 50, right: 50, bottom: 50, left: 50},
+    width = 800 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10);
+
+var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong>Frequency:</strong> <span class='tipperCol' >" + d.ProstitutionCount + "</span>";
+  })
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.call(tip);
+//----------------------------------
+d3.csv("SFdata.csv", type, function(error, data) {
+
+  x.domain(data.map(function(d) { return d.Districts; }));
+  y.domain([0, d3.max(data, function(d) { return d.ProstitutionCount; })]);
+//----------------------------------
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+  svg.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.Districts); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.ProstitutionCount); })
+      .attr("height", function(d) { return height - y(d.ProstitutionCount); })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+      d3.select('#graph_title2').text('Data from the year: '+year).attr("color",color)
+});
+function type(d) {
+  d.ProstitutionCount = +d.ProstitutionCount;
+  return d;
+}
 
 			   
 		</script>
