@@ -4,7 +4,7 @@
       <meta charset="utf-8">
       <title>Week 7 exercises</title>
       <script type="text/javascript" src="d3/d3.js"></script>
-      <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+      <script type="text/javascript" src="d3/index.js"></script>
   	  <style type="text/css">
 		
   	  	text, h1,h2,p {
@@ -224,8 +224,8 @@ d3.csv("SFdata.csv", function(dataset) {
 	}
 
 	function createTextLabels(year,texter,color){
-		d3.select('#graph_title ').text('Data from the year: '+year).attr("fill",color)
-	
+		d3.select('#graph_title ').text('Data from the year: '+year)
+		d3.select('#graph_title ').attr("fill",color)
 		texter.transition()
 	   		  .duration(1000)
 	   		  .ease('linear')
@@ -324,8 +324,6 @@ d3.csv("SFdata.csv", type, function(error, data) {
       .attr("height", function(d) { return height - y(d.ProstitutionCount); })
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide);
-
-      d3.select('#graph_title2').text('Data from the year: '+year).attr("color",color)
 });
 function type(d) {
   d.ProstitutionCount = +d.ProstitutionCount;
