@@ -10,327 +10,133 @@
   	  	text, h1,h2,p {
   	  		font-family: Helvetica, Arial, sans-serif;
   	  	}
+  	  	.K0 { fill: rgba(38, 70, 83, 1);}
+		.K1 { fill: rgba(42, 157, 143, 1);}
+		.K2 { fill: rgba(233, 196, 106, 1);}
+		.K3 { fill: rgba(244, 162, 97, 1);}
+		.K4 { fill: rgba(231, 111, 81, 1);}
+		.K5 { fill: #4F84B9; }
 
-		.axis path,
-		.axis line {
-			fill: none;
-			stroke: black;
-			shape-rendering: crispEdges;
+		.Ci {
+			transition: fill 1.5s ease
 		}
-		
-		.axis text {
-			font-family: Helvetica, Arial, sans-serif;
-			font-size: 11px;
-		}
-
-		.labels {
-			font-family: Helvetica, Arial, sans-serif;
-			font-size: 11px;
-		}
-
-		#graph_title, #graph_title2 {
-			font-family: Helvetica, Arial, sans-serif;
-			font-size: 20px;
-			text-align: center;
-		}
-
-		.textContainer {
-			width:800px;
-			text-align: center;
-		}
-
-		button {
-			margin: 0 auto
-		}
-
-		.bar {
-		  transition: fill 1.5s ease;
-		  fill: #5A9690;
-		}
-
-		.bar:hover {
-		  fill: #3ABBD8 ;
-		}
-
-		.x.axis path {
-		  display: none;
-		}
-
-		.d3-tip {
-		  line-height: 1;
-		  font-weight: bold;
-		  padding: 12px;
-		  background: rgba(0, 0, 0, 0.8);
-		  color: #fff;
-		  border-radius: 2px;
-		}
-
-		.tipperCol {
-			color: #506CD2;
-		}
-
 
 	</style>
   </head>
 
-  <body>
+<body>
 	<div class=Visualize1>
 		<div class="textContainer">
-			<h2> Header summarizing visualization 1</h2>
-			<p>Text describing visualization 1. Assume that the reader hasn't read this exercise.</p>
+			<h2>Visualizing geodata</h2>
+			<p>For this final exercise we will visualize your results from the K
+-means exercise from week 5.</p>
 			<p id="graph_title"></p>
-			<button id="id2003">Click to toggle between 2003 and 2015 data.</button>
+			<button id="K2" class="kButton">K2</button>
+			<button id="K3" class="kButton">K3</button>
+			<button id="K4" class="kButton">K4</button>
+			<button id="K5" class="kButton">K5</button>
+			<button id="K6" class="kButton">K6</button>
 		</div>			
-		<div class="Viz1"></div>
-
+		<div class="VizContainer1"></div>
 	</div>
-	<div class=Visualize2>
-		<div class="textContainer">
-		    <h2> Header summarizing visualization 2</h2>
-		    <p>Text describing visualization 2. Assume that the reader hasn't read this exercise.</p>
-		    <p id="graph_title2">Total number of crimes for 2013 and 2015 by region.</p>
-	    </div>
-	    <div class="Viz2"></div>
-    </div>
-    
-      <script type="text/javascript">
-var dataset;
 
-d3.csv("SFdata.csv", function(dataset) {
-	console.log(dataset)
-		
-//Change strings to numbers
-	dataset.forEach(function(d) {
-		d.ProstitutionCount = +d.ProstitutionCount;
-		d.VehicleTheftCount= +d.VehicleTheftCount;
-		d.TotalCrime= +d.TotalCrime;
-		d.ProstitutionCount2003 = +d.ProstitutionCount2003;
-		d.VehicleTheftCount2003= +d.VehicleTheftCount2003;
-		d.TotalCrime2003= +d.TotalCrime2003;
-		d.ProstitutionCount2015 = +d.ProstitutionCount2015;
-		d.VehicleTheftCount2015= +d.VehicleTheftCount2015;
-		d.TotalCrime2015= +d.TotalCrime2015;
-	});
+	<script type="text/javascript">
+	w = 800;
+	h = 600;
+	var margin = {top: 50, right: 50, bottom: 50, left: 50},
+    				width = w - margin.left - margin.right,
+    				height = h - margin.top - margin.bottom;
+
+	var svg = d3.select(".VizContainer1").append("svg")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+	
+	var mapGroup = svg.append("g");
+	var circleGroup = svg.append("g");
+	var circleGroup2 = svg.append("g");		    
+
+	var projection = d3.geo.mercator()
+						    .center([-122.433701, 37.767683])
+						    .scale(200000)
+						    .translate([width / 2, height / 2]);
+    var path = d3.geo.path().projection(projection);
 
 
 
-
-	//Width and height
-	var w = 800;
-	var h = 400;	
-	var padding = 50;
+	createSFPDmap()
 
 
-	//Create scale functions
-	var xScale = d3.scale.linear()
-						 .domain([0, Math.max(
-		 					d3.max(dataset, function(d) {return d['ProstitutionCount2003'];}),
-		 					d3.max(dataset, function(d) {return d['ProstitutionCount2015'];})
-					 	  )])
-						 .range([padding, w - padding * 2]);
-
-	var yScale = d3.scale.linear()
-						 .domain([0, Math.max(
-					 		d3.max(dataset, function(d) {return d['VehicleTheftCount2003'];}),
-					 		d3.max(dataset, function(d) {return d['VehicleTheftCount2015'];})
-					 	 )])
-						 .range([h - padding, padding]);
-	var rScale = d3.scale.linear()
-						 .domain([
-						 	Math.min(
-						 		d3.min(dataset, function(d) {return Math.sqrt(d['TotalCrime2003']);}),
-						 		d3.min(dataset, function(d) {return Math.sqrt(d['TotalCrime2015']);})), 
-						 	Math.max(
-						 		d3.max(dataset, function(d) {return Math.sqrt(d['TotalCrime2003']);}),
-						 		d3.max(dataset, function(d) {return Math.sqrt(d['TotalCrime2015']);}))
-						 ])
-					     .range([1,30]);
-
-	//Define X axis
-	var xAxis = d3.svg.axis()
-					  .scale(xScale)
-					  .orient("bottom")
-					  .ticks(10);
-
-	//Define Y axis
-	var yAxis = d3.svg.axis()
-					  .scale(yScale)
-					  .orient("left")
-					  .ticks(5);
-
-	//Create SVG element
-	var svg = d3.select(".Viz1")
-				.append("svg")
-				.attr("width", w)
-				.attr("height", h);
-
-	var circles = svg.selectAll("circle")
-					 .data(dataset)
-					 .enter()
-					 .append("circle")
-
-	var texter = svg.selectAll("text")
-					.data(dataset)
-					.enter()
-					.append("text")
-
-	var year = '2003'
-	var colors = ['#1D8586','#FD7D31']
-
-	//Initialize circles and text
-	createCrimeCircles(year,circles)
-	createTextLabels(year, texter,colors[1])
+	d3.json("kmeansdatalabels.json", function(json){
+		console.log(json)
 
 
-	d3.select("button").on("click", function(){
+		var circles = circleGroup.selectAll("circle")
+						 .data(json.Coordinates)
+						 .enter()
+						 .append("circle")
+						 .attr("cx", function(d) {
+							   return projection([d[0], d[1]])[0];
+						  })
+						 .attr("cy", function(d) {
+							   return projection([d[0], d[1]])[1];
+						   })
+						 .attr("r", 3)
+						 .attr("class","Ci")
+						 .style("opacity",0.75);
 
-		var buttonID = d3.select(this).attr("id");
+	
 
-		if (buttonID == "id2003") {
 
-			year = '2015';
-			d3.select(this).attr("id","id2015")
-			color = colors[0]
+		d3.selectAll(".kButton").on("click", function(){
+			var buttonID = d3.select(this).attr("id")
+			changeLabels(circles,buttonID)
+			drawMean(json.Mean,buttonID)
+			console.log(buttonID)
+		});
 
-		} else if (buttonID = "id2015") {
+		changeLabels(circles,'K2')
+		drawMean(json.Mean,'K2')
 
-			year = '2003'
-			d3.select(this).attr("id","id2003")
-			color = colors[1]
-		} else {
-			console.log("Something wen't wrong, please reload page")
+		function changeLabels(circles,kID) {
+			circles
+			   .data(json[kID+'labels'])
+			   .attr("class", function(d){
+			   		return 'K'+d.toString()
+			   })
 		}
 
-		createCrimeCircles(year,circles)
-		createTextLabels(year, texter,color)
+		function drawMean(meanData,kID) {
+		circleGroup2.selectAll("circle").remove()
+		id = kID[1]-2;
+		circleGroup2.selectAll("circle")
+					.data(meanData[id])
+					.enter()
+					.append("circle")
+					.attr("cx", function(d) {
+					   return projection([d[0], d[1]])[0];
+					})
+					.attr("cy", function(d) {
+					   return projection([d[0], d[1]])[1];
+					})
+					.attr("r", 15)
+					.attr("opacity", 0.75)
+					.attr("class","meanCircles")
+		}
 	});
-	function createCrimeCircles(year,circles) {
-		circles.transition()
-	   		   .duration(1000)
-	   		   .ease("linear") // Other possabilities, "linear", "cirlce", "elastic"
-			   .attr("cx", function(d) {
-			   		return xScale(d['ProstitutionCount'+year]);
-			   })
-			   .attr("cy", function(d) {
-			   		return yScale(d['VehicleTheftCount'+year]);
-			   })
-			   .attr("r", function(d) {
-			   		var r = Math.sqrt(d['TotalCrime'+year]);
-			   		return rScale(r)
-			   })
-			   .attr('stroke','#99DAFF')
-               .attr('stroke-width',2)
-               .attr('opacity',0.9);
+
+
+    function createSFPDmap() {
+		d3.json("sfpddistricts.geojson", function(json) {
+	        mapGroup.selectAll("path")
+	           .data(json.features)
+	           .enter()
+	           .append("path")
+	           .attr("d", path)
+	           .style("fill", "#E6E6E6")
+	           .attr('stroke-width',0.5)
+				   .attr('stroke',"#626262");
+		});
 	}
-
-	function createTextLabels(year,texter,color){
-		d3.select('#graph_title ').text('Data from the year: '+year)
-		d3.select('#graph_title ').attr("fill",color)
-		texter.transition()
-	   		  .duration(1000)
-	   		  .ease('linear')
-	   		  .text(function(d) {
-						return d.Districts;
-		   	  })
-		      .attr("x", function(d) {
-		      				radi = rScale(Math.sqrt(d['TotalCrime'+year])) +5
-					   		return xScale(d['ProstitutionCount'+year]) - radi*0.5;
-					   })
-		      .attr("y", function(d) {
-		      				radi = rScale(Math.sqrt(d['TotalCrime'+year])) + 5
-					   		return yScale(d['VehicleTheftCount'+year]) - radi;
-					   })
-		      .attr("class","labels")
-		      .attr("fill", color);
-}
-
-		//Create X axis
-	svg.append("g")
-		.attr("class", "axis")
-		.attr("transform", "translate(0," + (h - padding) + ")")
-		.call(xAxis);
-
-	//Create Y axis
-	svg.append("g")
-		.attr("class", "axis")
-		.attr("transform", "translate(" + padding + ",0)")
-		.call(yAxis);
-
-});
-
-// -----------------------------Visulazation 2 --------------------------
-// 
-var margin = {top: 50, right: 50, bottom: 50, left: 50},
-    width = 800 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var x = d3.scale.ordinal()
-    .rangeRoundBands([0, width], .1);
-
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10);
-
-var tip = d3.tip()
-  .attr('class', 'd3-tip')
-  .offset([-10, 0])
-  .html(function(d) {
-    return "<strong>Frequency:</strong> <span class='tipperCol' >" + d.ProstitutionCount + "</span>";
-  })
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-svg.call(tip);
-//----------------------------------
-d3.csv("SFdata.csv", type, function(error, data) {
-
-  x.domain(data.map(function(d) { return d.Districts; }));
-  y.domain([0, d3.max(data, function(d) { return d.ProstitutionCount; })]);
-//----------------------------------
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Frequency");
-
-  svg.selectAll(".bar")
-      .data(data)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.Districts); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.ProstitutionCount); })
-      .attr("height", function(d) { return height - y(d.ProstitutionCount); })
-      .on('mouseover', tip.show)
-      .on('mouseout', tip.hide);
-});
-function type(d) {
-  d.ProstitutionCount = +d.ProstitutionCount;
-  return d;
-}
-
-			   
-		</script>
-  </body>
+	</script>
+</body>
 </html>
