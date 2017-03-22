@@ -49,13 +49,11 @@
 			border:1px solid #dcdcdc;
 			display:inline-block;
 			cursor:pointer;
-			color:#777777;
-			font-family:Arial;
+			color:#000000;
 			font-size:15px;
 			font-weight:bold;
 			padding:6px 24px;
 			text-decoration:none;
-			text-shadow:0px 1px 0px #ffffff;
 		}
 
 		.bar {
@@ -124,13 +122,14 @@
 <body>
 		<div>
 		<div class="textContainer" >
-			<h2></h2>
+			<h2>Assignment 2A: One scatter plot and two datasets</h2>
 			<p>
 			The scatter plot shows the vehicle theft as a function of prostition crimes in San Francisco.
-			You can visualize how the crimes have decreased from 2003 to 2015 by pressing the button below. Each circle represents a district and the radius of the district is proportional to the total number of all crimes for the given year.
+			You can visualize how the crimes have decreased from 2003 to 2015 by pressing the button below. Each circle represents a district and the radius of the district is proportional to the total number of all crimes for the given year. 
+			ALSO TALK ABOUT THE QUESTION ASKED.
 			</p>
-			<p id="graph_title"></p>
 			<button id="id2003">Click to toggle between 2003 and 2015 data.</button>
+			<p id="graph_title1"></p>
 		</div>
 		<div class="Viz1 Viz"></div>
 
@@ -139,10 +138,9 @@
 
 	<div class=Visualize1>
 		<div class="textContainer">
-			<h2>Visualizing geodata</h2>
-			<p>For this final exercise we will visualize your results from the K
--means exercise from week 5.</p>
-			<p id="graph_title"></p>
+			<h2>Assignment 2B: Visualizing geodata</h2>
+			<p>WRITE SOME DECRIBTIVE TESXT HERE</p>
+			<p id="graph_title2"></p>
 			<button id="K2" class="kButton">K2</button>
 			<button id="K3" class="kButton">K3</button>
 			<button id="K4" class="kButton">K4</button>
@@ -280,8 +278,8 @@ d3.csv("Vis1.csv", function(dataset) {
 	}
 
 	function createTextLabels(year,texter,color){
-		d3.select('#graph_title ').text('Data from the year: '+year)
-		d3.select('#graph_title ').attr("fill",color)
+		d3.select('#graph_title1').text('Data from the year: '+year)
+		d3.select('#graph_title1').attr("color",color)
 		texter.transition()
 	   		  .duration(1000)
 	   		  .ease('linear')
@@ -326,7 +324,7 @@ d3.csv("Vis1.csv", function(dataset) {
 
 //---------------------Vizualizessation 2----------------
 	w = 800;
-	h = 600;
+	h = 500;
 	var r = 3;
 	var factor = 2;
 
@@ -401,7 +399,7 @@ d3.csv("Vis1.csv", function(dataset) {
 
 		function changeLabels(circles,kID) {
 
-		d3.select("#graph_title").text('Map with K means for K = '+kID[1].toString())
+		d3.select("#graph_title2").text('Map with K means for K = '+kID[1].toString())
 
 		circles
 		   .data(json[kID+'labels'])
