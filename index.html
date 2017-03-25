@@ -7,9 +7,10 @@
       <script type="text/javascript" src="d3/index.js"></script>
   	  <style type="text/css">
 		
-  	  	text, h1,h2,p {
+  	  	text, h1,h2,p, strong, span {
   	  		font-family: Helvetica, Arial, sans-serif;
   	  	}
+
 
 		.axis path,
 		.axis line {
@@ -26,12 +27,21 @@
 		.labels {
 			font-family: Helvetica, Arial, sans-serif;
 			font-size: 11px;
+			font-weight: bold;
 		}
 
-		#graph_title, #graph_title2 {
+		#graph_title1, #graph_title2 {
 			font-family: Helvetica, Arial, sans-serif;
 			font-size: 20px;
 			text-align: center;
+			font-weight: bold;
+			transition: color 1.5s ease;
+		}
+		.mapDistrict {
+			fill:#E6E6E6;
+		}
+		.mapDistrict:hover {
+			fill:#CCCCCC;
 		}
 
 		.textContainer {
@@ -56,30 +66,21 @@
 			text-decoration:none;
 		}
 
-		.bar {
-		  transition: fill 1.5s ease;
-		  fill: #5A9690;
-		}
-
-		.bar:hover {
-		  fill: #3ABBD8 ;
-		}
-
 		.x.axis path {
 		  display: none;
 		}
 
 		.d3-tip {
 		  line-height: 1;
-		  font-weight: bold;
+		  text-align: center;
 		  padding: 12px;
 		  background: rgba(0, 0, 0, 0.8);
 		  color: #fff;
-		  border-radius: 2px;
+		  border-radius: 4px;
 		}
 
 		.tipperCol {
-			color: #506CD2;
+			color: #B3B3B3;
 		}
 		.narrowtext{
 			display: inline-block
@@ -100,17 +101,10 @@
 		.K4.meanCircles { fill: #FF7361;}
 		.K5.meanCircles { fill: #3593D6;}
 
-		.Ci {
-			transition: fill 1.5s ease
-		}
-
 		.meanCircles {
 			stroke:#FFFFFF;
 			stroke-width: 0.5;
-		}
-		.textContainer {
-			width: 800px;
-			text-align: center;
+			transition: fill 1.5s ease
 		}
 		.Viz{
 			text-align:center;
@@ -154,7 +148,6 @@
 var dataset;
 
 d3.csv("Vis1.csv", function(dataset) {
-	console.log(dataset)
 		
 //Change strings to numbers
 	dataset.forEach(function(d) {
@@ -172,23 +165,25 @@ d3.csv("Vis1.csv", function(dataset) {
 	//Width and height
 	var w = 1200;
 	var h = 600;	
-	var padding = 100;
+	var padding = 80;
+	var plotPadY = 250;
+	var plotPadX = 100;
 
 
 	//Create scale functions
 	var xScale = d3.scale.linear()
 						 .domain([0, Math.max(
-		 					d3.max(dataset, function(d) {return d['ProstitutionCount2003']+padding;}),
-		 					d3.max(dataset, function(d) {return d['ProstitutionCount2015']+padding;})
+		 					d3.max(dataset, function(d) {return d['ProstitutionCount2003']+plotPadX;}),
+		 					d3.max(dataset, function(d) {return d['ProstitutionCount2015']+plotPadX;})
 					 	  )])
 						 .range([padding, w - padding * 2]);
 
 	var yScale = d3.scale.linear()
 						 .domain([0, Math.max(
-					 		d3.max(dataset, function(d) {return d['VehicleTheftCount2003'];}),
-					 		d3.max(dataset, function(d) {return d['VehicleTheftCount2015'];})
+					 		d3.max(dataset, function(d) {return d['VehicleTheftCount2003']+plotPadY;}),
+					 		d3.max(dataset, function(d) {return d['VehicleTheftCount2015']+plotPadY;})
 					 	 )])
-						 .range([h - padding, padding]);
+						 .range([h - padding, 0]);
 	var rScale = d3.scale.linear()
 						 .domain([
 						 	Math.min(
@@ -216,12 +211,27 @@ d3.csv("Vis1.csv", function(dataset) {
 	var svg = d3.select(".Viz1")
 				.append("svg")
 				.attr("width", w)
-				.attr("height", h)
+				.attr("height", h);
+
+
+
+	var tip = d3.tip()
+	  .attr('class', 'd3-tip')
+	  .offset([0,100])
+	  .html(function(d) {
+	    return 	"<div  class='tiphead' ><strong>"+ d['Districts'] +"</strong></div>" + 
+	    		"<div><strong>Total Crimes:</strong> <span class='tipperCol' >" + d['TotalCrime'+year] + "</span></div>" +
+	     		"<div><strong>Vehicle Theft:</strong> <span class='tipperCol' >" + d['VehicleTheftCount'+year] + "</span></div>" + 
+	     		"<div><strong>Prostitution:</strong> <span class='tipperCol' >" + d['ProstitutionCount'+year] + "</span></div>" ;
+	  });
+	svg.call(tip);
 
 	var circles = svg.selectAll("circle")
 					 .data(dataset)
 					 .enter()
 					 .append("circle")
+					 .on('mouseover', tip.show)
+      		   		 .on('mouseout', tip.hide);
 
 	var texter = svg.selectAll("text")
 					.data(dataset)
@@ -279,7 +289,7 @@ d3.csv("Vis1.csv", function(dataset) {
 
 	function createTextLabels(year,texter,color){
 		d3.select('#graph_title1').text('Data from the year: '+year)
-		d3.select('#graph_title1').attr("color",color)
+		d3.select('#graph_title1').style("color",color)
 		texter.transition()
 	   		  .duration(1000)
 	   		  .ease('linear')
@@ -314,17 +324,17 @@ d3.csv("Vis1.csv", function(dataset) {
 	svg.append("text")
         .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr("transform", "translate("+ (padding/2) +","+(h/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
-        .text("Vehicle Theft");
+        .text("Frequency of Vehicle Theft");
     svg.append("text")
         .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr("transform", "translate("+ (w/2-50) +","+(h-(padding/2))+")")  // centre below axis
-        .text("Prostitution");
+        .text("Frequency of Prostitution Instances Documented");
 
 });
 
 //---------------------Vizualizessation 2----------------
-	w = 800;
-	h = 500;
+	w = 600;
+	h = 600;
 	var r = 3;
 	var factor = 2;
 
@@ -338,11 +348,19 @@ d3.csv("Vis1.csv", function(dataset) {
 	
 	var mapGroup = svg.append("g");
 	var circleGroup = svg.append("g");
-	var circleGroup2 = svg.append("g");		    
+	var circleGroup2 = svg.append("g");
+
+	var tip = d3.tip()
+	  .attr('class', 'd3-tip')
+	  .offset([0,0])
+	  .html(function(d) {
+	    return "<span class='tipperCol' >" + d['properties']['DISTRICT'] + "</span>" ;
+	  });
+	svg.call(tip);	    
 
 	var projection = d3.geo.mercator()
 						    .center([-122.433701, 37.767683])
-						    .scale(200000)
+						    .scale(160000)
 						    .translate([width / 2, height / 2]);
     var path = d3.geo.path().projection(projection);
 
@@ -366,7 +384,6 @@ d3.csv("Vis1.csv", function(dataset) {
 							   return projection([d[0], d[1]])[1];
 						   })
 						 .attr("r", r)
-						 .attr("class","Ci")
 						 .style("opacity",0.75);
 	
 		d3.selectAll(".kButton").on("click", function(){
@@ -435,14 +452,17 @@ d3.csv("Vis1.csv", function(dataset) {
 
     function createSFPDmap() {
 		d3.json("sfpddistricts.geojson", function(json) {
+			console.log(json.features)
 	        mapGroup.selectAll("path")
 	           .data(json.features)
 	           .enter()
 	           .append("path")
 	           .attr("d", path)
-	           .style("fill", "#E6E6E6")
+           	   .on('mouseover', tip.show)
+  		   	   .on('mouseout', tip.hide)
 	           .attr('stroke-width',0.5)
-				   .attr('stroke',"#626262");
+			   .attr('stroke',"#626262")
+			   .attr('class','mapDistrict')
 		});
 	}
 	</script>
