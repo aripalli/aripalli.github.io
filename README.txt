@@ -1,5 +1,7 @@
 Assignment 2
 
+The link to the webpage is : https://aripalli.github.io
+
 The repository contains:
 Visualization1data.ipynb: Contains the code that creates the dataset used for Assignment 2A (One scatter plot and two datasets).
 
